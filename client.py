@@ -4,7 +4,8 @@ import socket, threading
 '''Global Variables'''
 # port number
 PORT = 5068
-# server ip
+# change this to server ip addr if running
+# on different host than server
 SERVER = socket.gethostbyname(socket.gethostname())
 # socket address ip+port
 ADDR = (SERVER, PORT)
