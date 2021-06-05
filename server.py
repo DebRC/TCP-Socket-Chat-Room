@@ -17,17 +17,16 @@ DISCONNECT = "exit"
 
 
 '''Socket Object'''
-# creating a new socket object
+# creating a new server socket object
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# binding the host socket with socket object
+# binding the server socket object with server's socket
 server.bind(ADDR)
 
 
 '''Server Functions'''
 # function to handle the clients
 def client(conn, addr):
-    print(f"New Client - [{addr}] connected.")
-
+    print(f"New Client - [{addr[0]}]-{addr[1]} connected.")
     # running client until disconnect message sent
     connected = True
     while connected:
@@ -44,17 +43,18 @@ def client(conn, addr):
 
         # if disconnect nmessage arrives disconnect client
         if msg == DISCONNECT:
-            print(f"Disconnecting from Server [{SERVER}]...\nDone!")
+            conn.send(f"Disconnecting from Server...\nDone!".encode(FORMAT))
+            print(f"[{addr[0]}]-{addr[1]} Disconnected")
             connected = False
         
         # otherwise print the message and send
         # "message received to client"
         else:
-            print(f"[{addr}] sent - {msg}")
+            print(f"[{addr[0]}]-{addr[1]} sent - {msg}")
             conn.send("Message received".encode(FORMAT))
-
     # close client object
     conn.close()
+    print(f"Active Connections - {threading.active_count()-2}")
         
 # function to start and run the server
 def start_server():
@@ -66,12 +66,10 @@ def start_server():
         # server accepting new socket object i.e. our client
         # and it's address
         conn, addr = server.accept()
-        # Running client/s concurrently using threading
+        # Running multiple client/s concurrently using threading
         thread = threading.Thread(target=client, args=(conn, addr))
         thread.start()
-
-        # -1 in active connection signifies this start() function
-        print(f"Active Connections - {threading.activeCount() - 1}")
+        print(f"Active Connections - {threading.active_count()-1}")
 
 
 # start server
