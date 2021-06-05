@@ -5,7 +5,7 @@ import socket, threading
 # port number
 PORT = 5068
 # server ip
-SERVER = "127.0.1.1"
+SERVER = socket.gethostbyname(socket.gethostname())
 # socket address ip+port
 ADDR = (SERVER, PORT)
 # specifies the max length of the message
