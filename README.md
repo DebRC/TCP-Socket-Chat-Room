@@ -1,3 +1,2 @@
-## Simple-Server-Client-Socket
-### A simple TCP server-client socket program which handles multiple clients using threading
-![Farmers Market Finder Demo](demo.gif)
+## TCP-Socket-Chat-Room
+### A simple TCP socket chat room of server-client architecture which handles multiple clients using threading. {Project in development}
