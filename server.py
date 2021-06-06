@@ -14,6 +14,9 @@ HEADER = 1024
 FORMAT = "utf-8"
 # message to disconnect
 DISCONNECT = "exit"
+# clients list
+clients=[]
+nicknames=[]
 
 
 '''Socket Object'''
@@ -24,10 +27,21 @@ server.bind(ADDR)
 
 
 '''Server Functions'''
+def broadcast(msg):
+    for c in clients:
+        c.send(msg)
+
+
+
 # function to handle the clients
 def client(conn, addr):
-    print(f"New Client - [{addr[0]}]-{addr[1]} connected.")
-    # running client until disconnect message sent
+    conn.send('Send-Nick'.encode(FORMAT))
+    nickname=conn.recv(20).decode(FORMAT)
+    clients.append(conn)
+    nicknames.append(nickname)
+    print(f"New Client - [{addr[0]}]-{addr[1]} connected with a Name - {nickname}")
+    conn.send('Connected to the chat room. Type \'exit\' to disconnect.'.encode(FORMAT))
+    broadcast(f'{nickname} has joined the chat!'.encode(FORMAT))
     connected = True
     while connected:
 
@@ -42,18 +56,21 @@ def client(conn, addr):
         msg = conn.recv(msg_length).decode(FORMAT)
 
         # if disconnect nmessage arrives disconnect client
-        if msg == DISCONNECT:
-            conn.send(f"Disconnecting from Server...\nDone!".encode(FORMAT))
-            print(f"[{addr[0]}]-{addr[1]} Disconnected")
+        if msg == f'{nickname}: exit':
             connected = False
         
         # otherwise print the message and send
         # "message received to client"
         else:
             print(f"[{addr[0]}]-{addr[1]} sent - {msg}")
-            conn.send("Message received".encode(FORMAT))
+            broadcast(msg.encode(FORMAT))
     # close client object
+    conn.send(f"Disconnecting from Server...\nDone!".encode(FORMAT))
+    print(f"[{addr[0]}]-{addr[1]} {nickname} Disconnected")
     conn.close()
+    clients.remove(conn)
+    nicknames.remove(nickname)
+    broadcast(f'{nickname} has left the chat'.encode(FORMAT))
     print(f"Active Connections - {threading.active_count()-2}")
         
 # function to start and run the server

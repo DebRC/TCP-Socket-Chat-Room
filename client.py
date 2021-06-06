@@ -1,5 +1,5 @@
 import socket, threading
-
+NICKNAME=""
 
 '''Global Variables'''
 # port number
@@ -16,6 +16,7 @@ FORMAT = "utf-8"
 # message to disconnect
 DISCONNECT = "exit"
 
+NICKNAME=input("Enter your name: ")
 
 '''Socket Object'''
 # creating a new client socket object
@@ -23,27 +24,33 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # connecting the client object with server's socket
 client.connect(ADDR)
 
-# function for sending one message
-def send(msg):
-    # encode the message
-    message = msg.encode(FORMAT)
-    # pad extra bits to maintain HEADER size
-    msg_length = str(len(message)).encode(FORMAT)
-    msg_length += b' ' * (HEADER - len(msg_length))
-    # send message length and message
-    client.send(msg_length)
-    client.send(message)
-    # printing "message" coming from
-    # server side
-    print(client.recv(HEADER).decode(FORMAT))
+# function for receiving messages
+def receive():
+    while True:
+        message=client.recv(HEADER).decode(FORMAT)
+        if message=="Send-Nick":
+            client.send(NICKNAME.encode(FORMAT))
+            continue
+        print(message)
+
+
+# function for sending messages
+def send():
+    while True:
+        # encode the message
+        message=f'{NICKNAME}: {input("")}'
+        message = message.encode(FORMAT)
+        # pad extra bits to maintain HEADER size
+        msg_length = str(len(message)).encode(FORMAT)
+        msg_length += b' ' * (HEADER - len(msg_length))
+        # send message length and message
+        client.send(msg_length)
+        client.send(message)
 
 
 def start_client():
-    print("Client-server connection is ready! Type 'exit' to disconnect")
-    while True:
-        msg=input("Type Your Message - ")
-        send(msg)
-        if msg==DISCONNECT:
-            exit()
-
+    receive_thread=threading.Thread(target=receive)
+    send_thread=threading.Thread(target=send)
+    receive_thread.start()
+    send_thread.start()
 start_client()
