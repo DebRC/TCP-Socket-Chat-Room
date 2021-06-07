@@ -1,6 +1,7 @@
-import socket, threading, sys
+import socket, threading
 import tkinter as tk
-NICKNAME=""
+
+
 
 '''Global Variables'''
 # port number
@@ -35,7 +36,7 @@ def receive():
                 continue
             print(message)
         except:
-            exit(0)
+            exit()
 
 
 # function for sending messages
@@ -45,8 +46,9 @@ def send():
         message=input("").encode(FORMAT)
         # send message length and message
         client.send(message)
-        if message==DISCONNECT:
-            sys.exit(0)
+        if message.decode(FORMAT)==DISCONNECT:
+            client.close()
+            exit()
 
 
 def start_client():

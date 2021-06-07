@@ -19,7 +19,7 @@ class Server():
         self.client_names[client]=client.recv(self.header).decode(self.format)
         client_name=self.client_names[client]
         print(f"[{client_addr[0]}]-{client_addr[1]} connected with a Name - [{client_name}]")
-        client.send('Connected to the chat room.'.encode(self.format))
+        client.send('Connected to the chat room. Type \'exit\' to disconnect.'.encode(self.format))
         self.broadcast(f'{client_name} has joined the chat!'.encode(self.format))
         while True:
             try:
@@ -31,11 +31,11 @@ class Server():
                 self.broadcast(msg.encode(self.format))
             except:
                 break
+        client.close()
         print(f"[{client_addr[0]}]-{client_addr[1]} with [{client_name}] Disconnected")
         del self.client_names[client]
         self.broadcast(f'{client_name} has left the chat'.encode(self.format))
         print(f"Active Connections - {threading.active_count()-2}")
-        client.close()
 
     def start_server(self):
         self.server.bind((self.host,self.port))
