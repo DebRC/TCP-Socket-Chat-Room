@@ -1,93 +1,55 @@
 import socket, threading
 
+class Server():
+    def __init__(self):
+        self.port=5068
+        self.host=socket.gethostbyname(socket.gethostname())
+        self.server=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.header=1024
+        self.format="utf-8"
+        self.client_names={}
+        self.disconnect='exit'
 
-'''Global Variables'''
-# port number
-PORT = 5068
-# getting server/host ip
-SERVER = socket.gethostbyname(socket.gethostname())
-# socket address ip+port
-ADDR = (SERVER, PORT)
-# specifies the max length of the message
-HEADER = 1024
-# format for encoding/decoding
-FORMAT = "utf-8"
-# message to disconnect
-DISCONNECT = "exit"
-# clients list
-clients=[]
-nicknames=[]
+    def broadcast(self,msg):
+        for client in self.client_names:
+            client.send(msg)
 
+    def handle_client(self,client,client_addr):
+        client.send('Send-Name'.encode(self.format))
+        self.client_names[client]=client.recv(self.header).decode(self.format)
+        client_name=self.client_names[client]
+        print(f"[{client_addr[0]}]-{client_addr[1]} connected with a Name - [{client_name}]")
+        client.send('Connected to the chat room.'.encode(self.format))
+        self.broadcast(f'{client_name} has joined the chat!'.encode(self.format))
+        while True:
+            try:
+                msg = client.recv(self.header).decode(self.format)
+                print(f"[{client_addr[0]}]-{client_addr[1]} - [{client_name}] - {msg}")
+                if msg==self.disconnect:
+                    break
+                msg=f'{client_name}: {msg}'
+                self.broadcast(msg.encode(self.format))
+            except:
+                break
+        print(f"[{client_addr[0]}]-{client_addr[1]} with [{client_name}] Disconnected")
+        del self.client_names[client]
+        self.broadcast(f'{client_name} has left the chat'.encode(self.format))
+        print(f"Active Connections - {threading.active_count()-2}")
+        client.close()
 
-'''Socket Object'''
-# creating a new server socket object
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# binding the server socket object with server's socket
-server.bind(ADDR)
-
-
-'''Server Functions'''
-def broadcast(msg):
-    for c in clients:
-        c.send(msg)
-
-
-
-# function to handle the clients
-def client(conn, addr):
-    conn.send('Send-Nick'.encode(FORMAT))
-    nickname=conn.recv(20).decode(FORMAT)
-    clients.append(conn)
-    nicknames.append(nickname)
-    print(f"New Client - [{addr[0]}]-{addr[1]} connected with a Name - {nickname}")
-    conn.send('Connected to the chat room. Type \'exit\' to disconnect.'.encode(FORMAT))
-    broadcast(f'{nickname} has joined the chat!'.encode(FORMAT))
-    connected = True
-    while connected:
-
-        # receiving message length and decoding it
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        # if an empty message arrives ignore it
-        if not msg_length:
-            continue
-        msg_length = int(msg_length)
-
-        # receiving message and decoding it
-        msg = conn.recv(msg_length).decode(FORMAT)
-
-        # if disconnect nmessage arrives disconnect client
-        if msg == f'{nickname}: exit':
-            connected = False
-        
-        # otherwise print the message and send
-        # "message received to client"
-        else:
-            print(f"[{addr[0]}]-{addr[1]} sent - {msg}")
-            broadcast(msg.encode(FORMAT))
-    # close client object
-    conn.send(f"Disconnecting from Server...\nDone!".encode(FORMAT))
-    print(f"[{addr[0]}]-{addr[1]} {nickname} Disconnected")
-    conn.close()
-    clients.remove(conn)
-    nicknames.remove(nickname)
-    broadcast(f'{nickname} has left the chat'.encode(FORMAT))
-    print(f"Active Connections - {threading.active_count()-2}")
-        
-# function to start and run the server
-def start_server():
-    print("Server is starting...")
-    # setting the server to listen mode
-    server.listen()
-    print(f"Server [{SERVER}] is ready to accept connections!")
-    while True:
-        # server accepting new socket object i.e. our client
-        # and it's address
-        conn, addr = server.accept()
-        # Running multiple client/s concurrently using threading
-        thread = threading.Thread(target=client, args=(conn, addr))
-        thread.start()
-        print(f"Active Connections - {threading.active_count()-1}")
-
-
+    def start_server(self):
+        self.server.bind((self.host,self.port))
+        self.server.listen()
+        print(f"Server is starting...\nServer [{self.host}] is ready to accept connections!")
+        while True:
+            # server accepting new socket object i.e. our client
+            # and it's address
+            client, client_addr = self.server.accept()
+            # Running multiple client/s concurrently using threading
+            thread = threading.Thread(target=self.handle_client, args=(client, client_addr))
+            thread.start()
+            print(f"Active Connections - {threading.active_count()-1}")
+       
 # start server
-start_server()
+s=Server()
+s.start_server()
