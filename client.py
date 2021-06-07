@@ -1,4 +1,5 @@
-import socket, threading
+import socket, threading, sys
+import tkinter as tk
 NICKNAME=""
 
 '''Global Variables'''
@@ -27,25 +28,25 @@ client.connect(ADDR)
 # function for receiving messages
 def receive():
     while True:
-        message=client.recv(HEADER).decode(FORMAT)
-        if message=="Send-Nick":
-            client.send(NICKNAME.encode(FORMAT))
-            continue
-        print(message)
+        try:
+            message=client.recv(HEADER).decode(FORMAT)
+            if message=="Send-Name":
+                client.send(NICKNAME.encode(FORMAT))
+                continue
+            print(message)
+        except:
+            exit(0)
 
 
 # function for sending messages
 def send():
     while True:
         # encode the message
-        message=f'{NICKNAME}: {input("")}'
-        message = message.encode(FORMAT)
-        # pad extra bits to maintain HEADER size
-        msg_length = str(len(message)).encode(FORMAT)
-        msg_length += b' ' * (HEADER - len(msg_length))
+        message=input("").encode(FORMAT)
         # send message length and message
-        client.send(msg_length)
         client.send(message)
+        if message==DISCONNECT:
+            sys.exit(0)
 
 
 def start_client():
