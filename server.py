@@ -33,7 +33,7 @@ class Server:
         client.close()
         print(f"[{client_addr[0]}]-{client_addr[1]} - [{client_name}] - Disconnected")
         del self.client_names[client]
-        self.broadcast(f'{client_name} has left the chat'.encode(self.format))
+        self.broadcast(f'{client_name} has left the chat\n'.encode(self.format))
         print(f"Active Connections - {threading.active_count()-2}")
 
     def start_server(self):
