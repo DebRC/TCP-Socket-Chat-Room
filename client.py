@@ -28,13 +28,16 @@ class Client:
 
     def gui(self):
         self.win=tk.Tk()
+        self.win.geometry("550x490")
+        self.win.maxsize(550,490)
+        self.win.minsize(550,490)
         self.win.configure(bg="deep sky blue")
 
         self.chat_label=tk.Label(self.win, text="Chat Room", bg="deep sky blue")
         self.chat_label.config(font=("Arial",12))
         self.chat_label.pack(padx=20,pady=5)
 
-        self.chat_area=tkinter.scrolledtext.ScrolledText(self.win, width=65, height=15, bg="powder blue")
+        self.chat_area=tkinter.scrolledtext.ScrolledText(self.win, height=12, bg="powder blue")
         self.chat_area.pack(padx=20, pady=5)
         self.chat_area.insert('end', 'Connected to the chat room.\n')
         self.chat_area.config(state="disabled", font=("Arial",15))
