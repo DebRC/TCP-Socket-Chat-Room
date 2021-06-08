@@ -19,7 +19,7 @@ class Server:
         self.client_names[client]=client.recv(self.header).decode(self.format)
         client_name=self.client_names[client]
         print(f"[{client_addr[0]}]-{client_addr[1]} - [{client_name}] - Connected")
-        self.broadcast(f'{client_name} has joined the chat!'.encode(self.format))
+        self.broadcast(f'{client_name} has joined the chat!\n'.encode(self.format))
         while True:
             try:
                 msg = client.recv(self.header).decode(self.format)
