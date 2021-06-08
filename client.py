@@ -6,26 +6,38 @@ from tkinter import messagebox
 
 class Client:
     def __init__(self):
+        # default port is choosen as 5068
         self.port=5068
+        # server ip address is of private ip of host
+        # change it to public ip to work over internet
         self.server=socket.gethostbyname(socket.gethostname())
+        # client socket object
         self.client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # message size
         self.header=1024
+        # encoding format
         self.format="utf-8"
         self.client_name=None
         self.disconnect='exit'
+        # gui window
         self.win=tk.Tk()
+        # flag to notify other functions that gui building is done
         self.gui_done=False
         
-    
+    # function to start client
     def start_client(self):
+        # connecting the server to client
         self.client.connect((self.server,self.port))
         self.win.withdraw()
+        # dialog box asking name
         self.name=simpledialog.askstring("Name", "Please enter your name",parent=self.win)
+        # starting both gui and receive thread
         gui_thread=threading.Thread(target=self.gui)
         receive_thread=threading.Thread(target=self.receive)
         gui_thread.start()
         receive_thread.start()
 
+    # function for gui
     def gui(self):
         self.win=tk.Tk()
         self.win.geometry("550x490")
@@ -59,26 +71,39 @@ class Client:
         self.win.protocol("WM_DELETE_WINDOW", self.stop)
         self.win.mainloop()
 
+    # function to disconnect client
     def stop(self):
+        # send server to disconnect
         self.client.send(self.disconnect.encode(self.format))
-        self.win.quit()
         self.win.destroy()
         exit()
 
+    # function to receive message
     def receive(self):
         while True:
             message=self.client.recv(self.header).decode(self.format)
+            # if received message asks for name then send name
             if message=='Send-Name':
                 self.client.send(self.name.encode(self.format))
             else:
+                # show message only when gui is done
                 if self.gui_done:
+                    # set the chat area to write mode
                     self.chat_area.config(state='normal')
+                    # insert the new msg
                     self.chat_area.insert('end', message)
+                    # auto scroll the chat area to recent
                     self.chat_area.yview('end')
+                    # set the chat area to read mode
                     self.chat_area.config(state='disabled')
+    
+    # function to send message
     def send(self):
+        # get the message from input area
         msg=f"{self.input_area.get('1.0', 'end').strip()}\n"
+        # encode and send to server
         self.client.send(msg.encode(self.format))
+        # reset the input area to default
         self.input_area.delete('1.0', 'end')
 
 

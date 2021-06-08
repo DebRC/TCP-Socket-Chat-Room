@@ -6,7 +6,7 @@ class Server:
         # default port is choosen as 5068
         self.port=5068
         # server ip address is of private ip of host
-        # change it to public to work over internet
+        # change it to public ip to work over internet
         self.host=socket.gethostbyname(socket.gethostname())
         # server socket object
         self.server=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
