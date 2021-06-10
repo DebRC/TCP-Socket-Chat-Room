@@ -34,18 +34,11 @@ class Server:
             client.send(crypted_msg)
     
     def askName(self, client):
-        msg=client.recv(self.header).decode(self.format)
-        if msg==self.disconnect:
-            client.close()
-        self.client_names[client]=msg
-        return msg
-
-
-    # function to handle a client
-    def handle_client(self,client,client_addr):
         # get the name of the client and store it in the map
-        client_name=self.askName(client)
+        msg=client.recv(self.header).decode(self.format)
+        self.client_names[client]=msg
 
+    def exchangeKeys(self, client):
         # exchanging keys
         # sending public key of server
         client.send((self.server_pub_key).encode(self.format))
@@ -56,13 +49,21 @@ class Server:
         # storing the pvt key of server for that client
         self.client_keys[client]=client_pvt_key
 
+    # function to handle a client
+    def handle_client(self,client,client_addr):
+
+        client_pvt_key=self.client_keys[client]
+        client_name=self.client_names[client]
+
         print(f"[{client_addr[0]}]-{client_addr[1]} - [{client_name}] - Connected")
+        print(f"Active Connections - {threading.active_count()-1}")
         # inform everyone that 'this client' has joined the server
         self.broadcast(f'{client_name} has joined the chat!\n')
         # receive message until there is an error at client side
 
         # creating aes object with the pvt key
         aes=AESCipher(client_pvt_key)
+        
 
         while True:
             try:
@@ -97,10 +98,11 @@ class Server:
             # server accepting new socket object i.e. our client
             # and it's address
             client, client_addr = self.server.accept()
+            self.askName(client)
+            self.exchangeKeys(client)
             # Running multiple client/s concurrently using threading
             thread = threading.Thread(target=self.handle_client, args=(client, client_addr))
             thread.start()
-            print(f"Active Connections - {threading.active_count()-1}")
        
 # start server
 s=Server()

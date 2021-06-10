@@ -1,7 +1,7 @@
-import socket, threading
+import socket, threading, random
 import tkinter as tk
 import tkinter.scrolledtext
-from tkinter import simpledialog
+import easygui
 from AES import AESCipher
 from key_exchange import DiffieHellman
 
@@ -37,7 +37,11 @@ class Client:
         self.client.connect((self.server,self.port))
         self.win.withdraw()
         # dialog box asking name
-        self.name=simpledialog.askstring("Name", "Please enter your name",parent=self.win)
+        self.name=easygui.enterbox("Please enter your name", "Name")
+        # send the name
+        self.sendName()
+        # exchange keys
+        self.exchangeKeys()
         # starting both gui and receive thread
         gui_thread=threading.Thread(target=self.gui)
         receive_thread=threading.Thread(target=self.receive)
@@ -84,11 +88,7 @@ class Client:
         self.client.close()
         exit(0)
 
-    # function to receive message
-    def receive(self):
-        # sending name of the client
-        self.client.send(self.name.encode(self.format))
-
+    def exchangeKeys(self):
         # exchanging keys
         # getting public key of server
         server_pub_key=int(self.client.recv(self.header).decode(self.format))
@@ -96,10 +96,17 @@ class Client:
         self.client_pvt_key=self.client_key.gen_shared_key(server_pub_key)
         # sending public key of client
         self.client.send(self.client_pub_key.encode(self.format))
-
         # creating aes object with the pvt key
         self.aes=AESCipher(self.client_pvt_key)
 
+    def sendName(self):
+        # sending name of the client
+        if self.name is None:
+            self.name="bot"+str(random.randint(1,99999))
+        self.client.send(self.name.encode(self.format))
+
+    # function to receive message
+    def receive(self):
         # loop to receive msgs
         while True:
             try:
@@ -124,6 +131,8 @@ class Client:
     def send(self):
         # get the message from input area
         msg=f"{self.input_area.get('1.0', 'end').strip()}\n"
+        if len(msg)==1:
+            return
         # encrypting the message
         msg=self.aes.encrypt(msg)
         # encode and send to server
