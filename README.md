@@ -53,7 +53,7 @@ Prime number 'p' and generator 'g' is chosen for this project from the prime num
 
 ### ◘ AES Encryption
 Advanced Encryption Standard (AES) is one of the most frequently used and most secure symmetric key encryption algorithms available today. It is a symmetrical block cipher algorithm that takes plain text in blocks of 128 bits and converts them to ciphertext using keys of 128, 192, and 256 bits.<br>
-The AES algorithm uses a substitution-permutation, or SP network, with multiple rounds to produce ciphertext. The number of rounds depends on the key size being used. A 128-bit key size dictates ten rounds, a 192-bit key size dictates 12 rounds, and a 258-bit key size has 14 rounds. Each of these rounds requires a round key, but since only one key is inputted into the algorithm, this key needs to be expanded to get keys for each round, including round 0.<br>
+The AES algorithm uses a substitution-permutation, or SP network, with multiple rounds to produce ciphertext. The number of rounds depends on the key size being used. A 128-bit key size dictates 10 rounds, a 192-bit key size dictates 12 rounds, and a 256-bit key size has 14 rounds. Each of these rounds requires a round key, but since only one key is inputted into the algorithm, this key needs to be expanded to get keys for each round, including round 0.<br>
 Each round includes:
 <ul>
   <li>Byte Substitution
@@ -64,7 +64,7 @@ Each round includes:
 <p align="center">
 <img src="https://upload.wikimedia.org/wikipedia/commons/5/50/AES_%28Rijndael%29_Round_Function.png" height=600px>
 </p>
-AES-256 is used for this project where an input key is hashed to a 256 bit key using SHA256 hashing algorithm. Python's 'hashlib' and 'Crypto.Cipher' library/modules is used to implement AES for this project.
+AES-256 is used for this project where an input key is hashed to produce a 256 bit key using SHA256 hashing algorithm and block size of 128 bit is used. Python's 'hashlib' and 'Crypto.Cipher' library/modules are used to implement AES for this project.
 
 ## ► Demo
 ### ◘ Client Interface
