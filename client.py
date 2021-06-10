@@ -1,8 +1,9 @@
-import socket, threading, sys
+import socket, threading
 import tkinter as tk
 import tkinter.scrolledtext
 from tkinter import simpledialog
-from tkinter import messagebox
+from AES import AESCipher
+from key_exchange import DiffieHellman
 
 class Client:
     def __init__(self):
@@ -19,6 +20,12 @@ class Client:
         self.format="utf-8"
         self.client_name=None
         self.disconnect='exit'
+
+        # client key (by diffie hellman)
+        self.client_key=DiffieHellman()
+        # generating public key
+        self.client_pub_key=str(self.client_key.gen_public_key())
+        self.client_pvt_key=None
         # gui window
         self.win=tk.Tk()
         # flag to notify other functions that gui building is done
@@ -64,7 +71,6 @@ class Client:
         self.send_button=tk.Button(self.win, text="Send", bg="PaleTurquoise1", command=self.send)
         self.send_button.config(font=("Arial", 12))
         self.send_button.pack(padx=20, pady=5)
-        self.send_button.bind('<Return>',self.send)
 
         self.gui_done=True
 
@@ -74,20 +80,34 @@ class Client:
     # function to disconnect client
     def stop(self):
         # send server to disconnect
-        self.client.send(self.disconnect.encode(self.format))
-        self.win.destroy()
-        exit()
+        self.client.send(self.aes.encrypt(self.disconnect))
+        self.client.close()
+        exit(0)
 
     # function to receive message
     def receive(self):
+        # sending name of the client
+        self.client.send(self.name.encode(self.format))
+
+        # exchanging keys
+        # getting public key of server
+        server_pub_key=int(self.client.recv(self.header).decode(self.format))
+        # generating pvt key
+        self.client_pvt_key=self.client_key.gen_shared_key(server_pub_key)
+        # sending public key of client
+        self.client.send(self.client_pub_key.encode(self.format))
+
+        # creating aes object with the pvt key
+        self.aes=AESCipher(self.client_pvt_key)
+
+        # loop to receive msgs
         while True:
-            message=self.client.recv(self.header).decode(self.format)
-            # if received message asks for name then send name
-            if message=='Send-Name':
-                self.client.send(self.name.encode(self.format))
-            else:
-                # show message only when gui is done
+            try:
+                # receiving msg from server
+                message=self.client.recv(self.header)
                 if self.gui_done:
+                    # decrypting the msg
+                    message=self.aes.decrypt(message)
                     # set the chat area to write mode
                     self.chat_area.config(state='normal')
                     # insert the new msg
@@ -96,13 +116,18 @@ class Client:
                     self.chat_area.yview('end')
                     # set the chat area to read mode
                     self.chat_area.config(state='disabled')
+            except:
+                print("Disconnected from server")
+                break
     
     # function to send message
     def send(self):
         # get the message from input area
         msg=f"{self.input_area.get('1.0', 'end').strip()}\n"
+        # encrypting the message
+        msg=self.aes.encrypt(msg)
         # encode and send to server
-        self.client.send(msg.encode(self.format))
+        self.client.send(msg)
         # reset the input area to default
         self.input_area.delete('1.0', 'end')
 
