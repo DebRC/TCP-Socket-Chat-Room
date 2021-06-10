@@ -5,7 +5,7 @@
 <a href="https://docs.python.org/3/">![](https://img.shields.io/badge/Python%203.x-%20-blue)</a>
 <a href="https://github.com/DebRC/TCP-Socket-Chat-Room/blob/master/LICENSE">![](https://img.shields.io/apm/l/vim-mode?style=plastic)</a>
 <br><br> A GUI-based TCP-Socket-Chat-Room of Client-Server Architecture where messages are encrypted between Client and Server using AES-256 encryption algorithm and symmetric keys are exchanged using Diffie-Hellman method.<br>
-A server is set to listening mode, with a specific IP Address and Port numner (can be edited) and clients are made to connect to the server. The messages are then broadcasted to all the clients present. It handles multiple clients using threading.<br>
+A server is set to listening mode, with a specific IP Address and Port number (can be edited) and clients are made to connect to the server. The messages are then broadcasted to all the clients present. It handles multiple clients using threading.<br>
 This project is based on Socket Progamming and Network Security and done using Python.
 
 ## ► Working
