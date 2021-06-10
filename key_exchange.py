@@ -1,3 +1,4 @@
+# prime numbers defined in RFC 3526
 primes = {
 	
 	# 1536-bit
@@ -42,34 +43,31 @@ import binascii
 import hashlib
 
 class DiffieHellman:
-	""" Class to represent the Diffie-Hellman key exchange protocol """
 	# Current minimum recommendation is 2048 bit.
 	def __init__(self, group=14):
 		if group in primes:
 			self.p = primes[group]["prime"]
 			self.g = primes[group]["generator"]
 		else:
-			raise Exception("Group not supported")
+			raise Exception("Invalid Group")
 
+		# generating random pvt key
 		self.__a = int(binascii.hexlify(os.urandom(32)), base=16)
-
-	def get_private_key(self):
-		return self.__a
 
 	def gen_public_key(self):
 		# calculate G^a mod p
 		return pow(self.g, self.__a, self.p)
 
-	def check_other_public_key(self, other_contribution):
-		if 2 <= other_contribution and other_contribution <= self.p - 2:
-			if pow(other_contribution, (self.p - 1) // 2, self.p) == 1:
+	def check_other_public_key(self, pub_key):
+		if 2 <= pub_key and pub_key <= self.p - 2:
+			if pow(pub_key, (self.p - 1) // 2, self.p) == 1:
 				return True
 		return False
 
-	def gen_shared_key(self, other_contribution):
+	def gen_shared_key(self, pub_key):
 		# calculate the shared key G^ab mod p
-		if self.check_other_public_key(other_contribution):
-			self.shared_key = pow(other_contribution, self.__a, self.p)
+		if self.check_other_public_key(pub_key):
+			self.shared_key = pow(pub_key, self.__a, self.p)
 			return hashlib.sha256(str(self.shared_key).encode()).hexdigest()
 		else:
 			raise Exception("Bad public key")
