@@ -33,12 +33,18 @@ class Server:
             crypted_msg=aes.encrypt(msg)
             client.send(crypted_msg)
     
+    def askName(self, client):
+        msg=client.recv(self.header).decode(self.format)
+        if msg==self.disconnect:
+            client.close()
+        self.client_names[client]=msg
+        return msg
+
 
     # function to handle a client
     def handle_client(self,client,client_addr):
         # get the name of the client and store it in the map
-        self.client_names[client]=client.recv(self.header).decode(self.format)
-        client_name=self.client_names[client]
+        client_name=self.askName(client)
 
         # exchanging keys
         # sending public key of server
